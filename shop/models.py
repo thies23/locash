@@ -16,7 +16,6 @@ class User(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=9, decimal_places=2)
-    image = models.ImageField(upload_to='products/', blank=True, null=True)
     id12 = models.CharField(max_length=12, unique=True, validators=[id12_validator])
 
     def __str__(self):

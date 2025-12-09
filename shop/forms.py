@@ -19,7 +19,7 @@ class CreateUserForm(forms.ModelForm):
 class CreateProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'price', 'image', 'id12']
+        fields = ['name', 'price', 'id12']
 
 class EditPriceForm(forms.ModelForm):
     class Meta:
