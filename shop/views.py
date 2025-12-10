@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.db import transaction as db_transaction
-from django.db.models import Max
+from django.db.models import Q, Max
 from django.contrib import messages
 from decimal import Decimal
+from django.http import JsonResponse
+import random
 
 from .models import User, Product, Transaction
 from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm
@@ -163,7 +165,7 @@ def user_detail(request, id12):
                 messages.success(request, 'Letzte Transaktion rückgängig gemacht.')
             return redirect('user_detail', id12=id12)
 
-    last_transactions = user.transactions.all()[:5]
+    last_transactions = Transaction.objects.filter(Q(user=user) | Q(to_user=user)).order_by('-timestamp')[:10]
     context = {
         'user': user,
         'products': products,
@@ -218,3 +220,8 @@ def manage(request):
         'create_product_form': create_product_form,
         'edit_price_form': edit_price_form,
     })
+def generate_unique_id(request):
+    while True:
+        new_id = str(random.randint(10**11, 10**12 - 1))  # 12-stellig
+        if not User.objects.filter(id12=new_id).exists() and not Product.objects.filter(id12=new_id).exists():
+            return JsonResponse({"id": new_id})

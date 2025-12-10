@@ -24,4 +24,5 @@ urlpatterns = [
     path('user/<str:id12>/', views.user_detail, name='user_detail'),
     path('manage/', views.manage, name='manage'),
     path('admin/', admin.site.urls),
+    path('generate-id/', views.generate_unique_id, name='generate_unique_id'),
 ]

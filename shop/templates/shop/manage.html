@@ -5,7 +5,28 @@
       <h3>Neue Benutzer anlegen</h3>
       <form method="post">{% csrf_token %}
         <input type="hidden" name="create_user" value="1">
-        {{ create_user_form.as_p }}
+        <p>
+        {{ create_user_form.username.label_tag }}
+        {{ create_user_form.username }}
+        </p>
+
+        <p>
+        {{ create_user_form.display_name.label_tag }}
+        {{ create_user_form.display_name }}
+        </p>
+
+        <p>
+        {{ create_user_form.id12.label_tag }}
+        <div class="input-group">
+            {{ create_user_form.id12 }}
+            <button type="button" class="btn btn-secondary" onclick="generateID('id_id12')">Generieren</button>
+        </div>
+        </p>
+
+        <p>
+        {{ create_user_form.balance.label_tag }}
+        {{ create_user_form.balance }}
+        </p>
         <button class="btn btn-primary">Erstellen</button>
       </form>
 
@@ -56,4 +77,14 @@
       </table>
     </div>
   </div>
+  <script>
+    function generateID(elementId) {
+        fetch("{% url 'generate_unique_id' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(elementId).value = data.id;
+            });
+    }
+  </script>
+
 {% endblock %}
