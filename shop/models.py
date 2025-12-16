@@ -16,7 +16,7 @@ class User(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=9, decimal_places=2)
-    id12 = models.CharField(max_length=13, unique=True])
+    id12 = models.CharField(max_length=13, unique=True)
 
     def __str__(self):
         return f"{self.name} ({self.id12}) - {self.price}€"
