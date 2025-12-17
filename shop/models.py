@@ -2,12 +2,12 @@ from django.db import models
 from django.core.validators import RegexValidator
 from decimal import Decimal
 
-id12_validator = RegexValidator(regex=r'^\d{12}$', message='ID muss 12 Ziffern lang sein.')
+id13_validator = RegexValidator(regex=r'^\d{13}$', message='ID muss 13 Ziffern lang sein.')
 
 class User(models.Model):
     username = models.CharField(max_length=150, unique=True)
     display_name = models.CharField(max_length=200)
-    id12 = models.CharField(max_length=12, unique=True, validators=[id12_validator])
+    id12 = models.CharField(max_length=13, unique=True, validators=[id13_validator])
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
