@@ -11,7 +11,6 @@ from .models import User, Product, Transaction
 from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm
 
 ALLOWED_OVERDRAFT = Decimal('-25.00')
-latest_time = Transaction.objects.aggregate(latest=Max("timestamp"))["latest"]
 
 def index(request):
     q = request.GET.get('q', '').strip()

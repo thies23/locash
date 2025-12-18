@@ -1,118 +1,135 @@
 {% extends 'shop/base.html' %}
 {% block content %}
-  <h2>{{ user.display_name }} ({{ user.username }})</h2>
-  <p><strong>ID:</strong> {{ user.id12 }}<br><strong>Guthaben:</strong> {{ user.balance }}€</p>
-
-  <h4>Letzte Transaktionen</h4>
-    <ul class="list-group mb-3">
-    {% for t in last_transactions %}
-        <li class="list-group-item">
-        <strong>{{ t.timestamp }}</strong><br>
-
-        {% if t.tx_type == 'SEND' %}
-            {% if t.user.id == user.id %}
-                💸 <strong>{{ t.amount }}€ gesendet</strong> an <strong>{{ t.to_user.display_name }}</strong>
-            {% else %}
-                📩 <strong>{{ t.amount }}€ erhalten</strong> von <strong>{{ t.user.display_name }}</strong>
-            {% endif %}
-        {% elif t.tx_type == 'BUY' %}
-            🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
-        {% elif t.tx_type == 'TOPUP' %}
-            💰 Aufladung: +{{ t.amount }}€
-        {% elif t.tx_type == 'WITHDRAW' %}
-            💲 Entnahme: -{{ t.amount }}€
-        {% endif %}
-        </li>
-    {% empty %}
-        <li class="list-group-item">Keine Transaktionen.</li>
-    {% endfor %}
-    </ul>
-
 
   <div class="row">
     <div class="col-md-4">
-      <h5>Guthaben aufladen</h5>
-      <form method="post">{% csrf_token %}
-        {{ topup_form.amount }}
-        <input type="hidden" name="action" value="topup">
-        <div class="mb-2"><button class="btn btn-primary">Aufladen</button></div>
-      </form>
+      <h2>{{ user.display_name }} ({{ user.username }})</h2>
+    <p><strong>ID:</strong> {{ user.id12 }}</p>
 
-      <div class="btn-group" role="group">
-        <form method="post" style="display:inline;">{% csrf_token %}
-          <input type="hidden" name="action" value="topup_quick">
-          <input type="hidden" name="amount" value="5.00">
-          <button class="btn btn-outline-secondary">5€</button>
+
+      <details>
+        <summary><b>Guthaben:</b> {{ user.balance }}€</summary>
+        <h5>Guthaben aufladen</h5>
+        <form method="post">{% csrf_token %}
+          <!-- {{ topup_form.amount }} -->
+          <div class="input-group">
+            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+            <input type="hidden" name="action" value="topup">
+            <button class="btn btn-primary">Aufladen</button>
+          </div>
         </form>
-        <form method="post" style="display:inline;">{% csrf_token %}
-          <input type="hidden" name="action" value="topup_quick">
-          <input type="hidden" name="amount" value="10.00">
-          <button class="btn btn-outline-secondary">10€</button>
+
+        <div class="btn-group" role="group">
+          <form method="post" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="action" value="topup_quick">
+            <input type="hidden" name="amount" value="5.00">
+            <button class="btn btn-outline-secondary">5€</button>
+          </form>
+          <form method="post" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="action" value="topup_quick">
+            <input type="hidden" name="amount" value="10.00">
+            <button class="btn btn-outline-secondary">10€</button>
+          </form>
+          <form method="post" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="action" value="topup_quick">
+            <input type="hidden" name="amount" value="20.00">
+            <button class="btn btn-outline-secondary">20€</button>
+          </form>
+          <form method="post" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="action" value="topup_quick">
+            <input type="hidden" name="amount" value="50.00">
+            <button class="btn btn-outline-secondary">50€</button>
+          </form>
+        </div>
+
+        <h5>Geld entnehmen</h5>
+        <form method="post">{% csrf_token %}
+          <div class="input-group">
+            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+            <input type="hidden" name="action" value="withdraw">
+            <button class="btn btn-warning">Entnehmen</button>
+          </div>
         </form>
-        <form method="post" style="display:inline;">{% csrf_token %}
-          <input type="hidden" name="action" value="topup_quick">
-          <input type="hidden" name="amount" value="20.00">
-          <button class="btn btn-outline-secondary">20€</button>
-        </form>
-        <form method="post" style="display:inline;">{% csrf_token %}
-          <input type="hidden" name="action" value="topup_quick">
-          <input type="hidden" name="amount" value="50.00">
-          <button class="btn btn-outline-secondary">50€</button>
-        </form>
-      </div>
+
+        <h5>Geld schicken</h5>
+          <form method="post">{% csrf_token %}
+
+            <div class="input-group">
+              <input name="to_user_username" class="form-control" placeholder="Username">
+              <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+              <input type="hidden" name="action" value="send">
+              <button class="btn btn-primary">Senden</button>
+            </div>
+          </form>
+      </details>
 
       <hr>
+      <h5>Letzte Transaktionen</h5>
       <form method="post">{% csrf_token %}
         <input type="hidden" name="action" value="undo_last">
         <button class="btn btn-danger">Letzte Transaktion rückgängig machen</button>
       </form>
+      <div>
+        <ul class="list-group mb-2">
+        {% for t in last_transactions %}
+            <li class="list-group-item">
+            <strong>{{ t.timestamp }}</strong><br>
+
+            {% if t.tx_type == 'SEND' %}
+                {% if t.user.id == user.id %}
+                    💸 <strong>{{ t.amount }}€ gesendet</strong> an <strong>{{ t.to_user.display_name }}</strong>
+                {% else %}
+                    📩 <strong>{{ t.amount }}€ erhalten</strong> von <strong>{{ t.user.display_name }}</strong>
+                {% endif %}
+            {% elif t.tx_type == 'BUY' %}
+                🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
+            {% elif t.tx_type == 'TOPUP' %}
+                💰 Aufladung: +{{ t.amount }}€
+            {% elif t.tx_type == 'WITHDRAW' %}
+                💲 Entnahme: -{{ t.amount }}€
+            {% endif %}
+            </li>
+        {% empty %}
+            <li class="list-group-item">Keine Transaktionen.</li>
+        {% endfor %}
+        </ul>
+      </div>
     </div>
 
-    <div class="col-md-4">
-      <h5>Produkte kaufen</h5>
-      <ul class="list-group">
-        {% for p in products %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ p.name }}</strong><br>{{ p.price }}€<br>
-          </div>
-          <form method="post" style="margin-left:10px;">{% csrf_token %}
-            <input type="hidden" name="action" value="buy">
-            <input type="hidden" name="product_id" value="{{ p.id12 }}">
-            <button class="btn btn-success">Kaufen</button>
+    <div class="col-md-8">
+      <div class="row">
+        <div class="col">
+          <h4>Produkte</h4>
+        </div>
+        <div class="col">
+          <form method="post">{% csrf_token %}
+            <div class="input-group">
+              <input id="product_id_input" name="product_id" class="form-control" placeholder="EAN">
+              <input type="hidden" name="action" value="buy_by_id">
+              <button class="btn btn-primary">Kaufen</button>
+            </div>
           </form>
-        </li>
-        {% endfor %}
-      </ul>
+        </div>
+      </div>
 
       <hr>
-      <h6>Produkt per ID kaufen</h6>
-      <form method="post">{% csrf_token %}
-        <input id="product_id_input" name="product_id" class="form-control" placeholder="EAN">
-        <input type="hidden" name="action" value="buy_by_id">
-        <button class="btn btn-primary mt-2">Kaufen</button>
-      </form>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for p in products %}
+        <div class="col">
+          <div class="card shadow-sm p-4 h-100" style="border-radius: 18px; transition: 0.15s; cursor: pointer;" onclick="document.getElementById('buy-form-{{ p.id12 }}').submit();">
+            <div>
+              <strong>{{ p.name }}</strong><br>{{ p.price }}€<br>
+            </div>
+            <form id="buy-form-{{ p.id12 }}" method="post" style="display:none;">{% csrf_token %}
+              <input type="hidden" name="action" value="buy">
+              <input type="hidden" name="product_id" value="{{ p.id12 }}">
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-
-    <div class="col-md-4">
-        <h5>Geld schicken</h5>
-        <form method="post">{% csrf_token %}
-            <input type="hidden" name="action" value="send">
-            {{ send_form.to_user_username.label_tag }}
-            {{ send_form.to_user_username }}
-            {{ send_form.amount.label_tag }}
-            {{ send_form.amount }}
-            <div class="mt-2"><button class="btn btn-primary">Senden</button></div>
-        </form>
-
-        <hr>
-        <h5>Geld entnehmen</h5>
-        <form method="post">{% csrf_token %}
-            <input type="hidden" name="action" value="withdraw">
-            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
-            <div class="mt-2"><button class="btn btn-warning">Entnehmen</button></div>
-        </form>
-    </div>
+  </div>
 
 <script>
   const prodInput = document.getElementById('product_id_input');
