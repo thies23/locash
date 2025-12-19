@@ -76,7 +76,7 @@ def user_detail(request, id12):
                 user.save()
                 Transaction.objects.create(tx_type='BUY', amount=product.price, user=user, product=product)
             messages.success(request, f'Produkt {product.name} gekauft.')
-            return redirect('user_detail', id12=id12)
+            return redirect(f"{reverse('user_detail', args=[id12])}?bought=1")
 
         elif action == 'buy_by_id':
             form = BuyByIdForm(request.POST)
@@ -95,6 +95,7 @@ def user_detail(request, id12):
                     user.save()
                     Transaction.objects.create(tx_type='BUY', amount=product.price, user=user, product=product)
                 messages.success(request, f'Produkt {product.name} gekauft.')
+                return redirect(f"{reverse('user_detail', args=[id12])}?bought=1")
             else:
                 messages.error(request, 'Ungültige Produkt-ID.')
             return redirect('user_detail', id12=id12)

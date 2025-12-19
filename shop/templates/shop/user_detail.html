@@ -152,10 +152,35 @@
     </div>
   </div>
 
-<script>
-  const prodInput = document.getElementById('product_id_input');
-  if (prodInput) prodInput.focus();
+  <!-- Redirect progress indicator (top-right) -->
+  <div id="redirect-progress" style="position:fixed; top:12px; right:12px; width:220px; z-index:2000; display:none;">
+    <div class="progress justify-content-end" style="height:10px; border-radius:6px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+      <div id="redirect-progress-bar" class="progress-bar bg-primary" role="progressbar" style="width:100%; height:10px; border-radius:6px;"></div>
+    </div>
+  </div>
 
-  setTimeout(() => { window.location.href = "{% url 'index' %}"; }, 30000);
-</script>
+  <script>
+    const prodInput = document.getElementById('product_id_input');
+    if (prodInput) prodInput.focus();
+
+    const timeoutMs = {% if request.GET.bought %}5000{% else %}20000{% endif %};
+
+    // Show and animate progress bar only when timeout is active
+    (function () {
+      const progress = document.getElementById('redirect-progress');
+      const bar = document.getElementById('redirect-progress-bar');
+      if (!progress || !bar) return;
+      progress.style.display = 'block';
+      const start = Date.now();
+      function tick() {
+        const elapsed = Date.now() - start;
+        const pct = Math.max(0, 100 - (elapsed / timeoutMs) * 100);
+        bar.style.width = pct + '%';
+        if (elapsed < timeoutMs) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    setTimeout(() => { window.location.href = "{% url 'index' %}"; }, timeoutMs);
+  </script>
 {% endblock %}
