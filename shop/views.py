@@ -160,8 +160,29 @@ def user_detail(request, id12):
                 elif last.tx_type == 'WITHDRAW':
                     user.balance += last.amount
                     user.save()
-                last.delete()
+                last.canceled = True
+                last.save()
                 messages.success(request, 'Letzte Transaktion rückgängig gemacht.')
+            return redirect('user_detail', id12=id12)
+
+        elif action == 'undo_specific':
+            tx_id = request.POST.get('transaction_id')
+            try:
+                tx = Transaction.objects.get(pk=tx_id, user=user)
+            except Transaction.DoesNotExist:
+                messages.error(request, 'Transaktion nicht gefunden.')
+                return redirect('user_detail', id12=id12)
+            undo_transaction(tx, request)
+            return redirect('user_detail', id12=id12)
+
+        elif action == 'redo_specific':
+            tx_id = request.POST.get('transaction_id')
+            try:
+                tx = Transaction.objects.get(pk=tx_id, user=user)
+            except Transaction.DoesNotExist:
+                messages.error(request, 'Transaktion nicht gefunden.')
+                return redirect('user_detail', id12=id12)
+            redo_transaction(tx, request)
             return redirect('user_detail', id12=id12)
 
     last_transactions = Transaction.objects.filter(Q(user=user) | Q(to_user=user)).order_by('-timestamp')[:10]
@@ -174,6 +195,52 @@ def user_detail(request, id12):
         'buyid_form': buyid_form,
     }
     return render(request, 'shop/user_detail.html', context)
+
+def undo_transaction(tx, request):
+    user = tx.user
+    with db_transaction.atomic():
+        if tx.tx_type == 'BUY':
+            user.balance += tx.amount
+            user.save()
+        elif tx.tx_type == 'TOPUP':
+            user.balance -= tx.amount
+            user.save()
+        elif tx.tx_type == 'SEND':
+            to_user = tx.to_user
+            if to_user:
+                to_user.balance -= tx.amount
+                to_user.save()
+            user.balance += tx.amount
+            user.save()
+        elif tx.tx_type == 'WITHDRAW':
+            user.balance += tx.amount
+            user.save()
+        tx.canceled = True
+        tx.save()
+        messages.success(request, 'Transaktion rückgängig gemacht.')
+
+def redo_transaction(tx, request):
+    user = tx.user
+    with db_transaction.atomic():
+        if tx.tx_type == 'BUY':
+            user.balance -= tx.amount
+            user.save()
+        elif tx.tx_type == 'TOPUP':
+            user.balance += tx.amount
+            user.save()
+        elif tx.tx_type == 'SEND':
+            to_user = tx.to_user
+            if to_user:
+                to_user.balance += tx.amount
+                to_user.save()
+            user.balance -= tx.amount
+            user.save()
+        elif tx.tx_type == 'WITHDRAW':
+            user.balance -= tx.amount
+            user.save()
+        tx.canceled = False
+        tx.save()
+        messages.success(request, 'Transaktion wiederhergestellt.')
 
 def manage(request):
     users = User.objects.all().order_by('username')

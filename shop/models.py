@@ -33,6 +33,7 @@ class Transaction(models.Model):
     to_user = models.ForeignKey(User, related_name='incoming_transactions', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     note = models.CharField(max_length=255, blank=True)
+    canceled = models.BooleanField(default=False)
 
 class Meta:
     ordering = ['-timestamp']

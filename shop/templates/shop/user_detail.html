@@ -65,30 +65,49 @@
 
       <hr>
       <h5>Letzte Transaktionen</h5>
-      <form method="post">{% csrf_token %}
+      <!-- <form method="post">{% csrf_token %}
         <input type="hidden" name="action" value="undo_last">
         <button class="btn btn-danger">Letzte Transaktion rückgängig machen</button>
-      </form>
+      </form> -->
       <div>
         <ul class="list-group mb-2">
         {% for t in last_transactions %}
-            <li class="list-group-item">
-            <strong>{{ t.timestamp }}</strong><br>
+          <li class="list-group-item{% if t.canceled %} list-group-item-danger{% endif %}">
+            <div class="row justify-content-end">
+              <div class="col-md-8">
+                <strong>{{ t.timestamp }}</strong><br>
 
-            {% if t.tx_type == 'SEND' %}
-                {% if t.user.id == user.id %}
-                    💸 <strong>{{ t.amount }}€ gesendet</strong> an <strong>{{ t.to_user.display_name }}</strong>
-                {% else %}
-                    📩 <strong>{{ t.amount }}€ erhalten</strong> von <strong>{{ t.user.display_name }}</strong>
+                {% if t.tx_type == 'SEND' %}
+                    {% if t.user.id == user.id %}
+                        💸 <strong>{{ t.amount }}€ gesendet</strong> an <strong>{{ t.to_user.display_name }}</strong>
+                    {% else %}
+                        📩 <strong>{{ t.amount }}€ erhalten</strong> von <strong>{{ t.user.display_name }}</strong>
+                    {% endif %}
+                {% elif t.tx_type == 'BUY' %}
+                    🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
+                {% elif t.tx_type == 'TOPUP' %}
+                    💰 Aufladung: +{{ t.amount }}€
+                {% elif t.tx_type == 'WITHDRAW' %}
+                    💲 Entnahme: -{{ t.amount }}€
                 {% endif %}
-            {% elif t.tx_type == 'BUY' %}
-                🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
-            {% elif t.tx_type == 'TOPUP' %}
-                💰 Aufladung: +{{ t.amount }}€
-            {% elif t.tx_type == 'WITHDRAW' %}
-                💲 Entnahme: -{{ t.amount }}€
-            {% endif %}
-            </li>
+              </div>
+              <div class="col-md-4 text-end">
+                {% if t.canceled %}
+                  <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="redo_specific">
+                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-success mt-2">Restore</button>
+                  </form>
+                {% else %}
+                  <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="undo_specific">
+                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-danger mt-2">Undo</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </li>
         {% empty %}
             <li class="list-group-item">Keine Transaktionen.</li>
         {% endfor %}
