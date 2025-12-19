@@ -72,16 +72,16 @@
       <div>
         <ul class="list-group mb-2">
         {% for t in last_transactions %}
-          <li class="list-group-item{% if t.canceled %} list-group-item-danger{% endif %}">
+          <li class="list-group-item{% if t.canceled %} list-group-item-danger{% elif t.tx_type == 'SEND' %} list-group-item-info{% elif t.tx_type == 'TOPUP' %} list-group-item-primary{% elif t.tx_type == 'WITHDRAW' %} list-group-item-warning{% endif %}">
             <div class="row justify-content-end">
               <div class="col-md-8">
                 <strong>{{ t.timestamp }}</strong><br>
 
                 {% if t.tx_type == 'SEND' %}
                     {% if t.user.id == user.id %}
-                        💸 <strong>{{ t.amount }}€ gesendet</strong> an <strong>{{ t.to_user.display_name }}</strong>
+                        💸 <strong>{{ t.amount }}€</strong> gesendet an <strong><a href="{% url 'user_detail' id12=t.to_user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.to_user.display_name }}</a></strong>
                     {% else %}
-                        📩 <strong>{{ t.amount }}€ erhalten</strong> von <strong>{{ t.user.display_name }}</strong>
+                        📩 <strong>{{ t.amount }}€</strong> erhalten von <strong><a href="{% url 'user_detail' id12=t.user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.user.display_name }}</a></strong>
                     {% endif %}
                 {% elif t.tx_type == 'BUY' %}
                     🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
@@ -92,6 +92,7 @@
                 {% endif %}
               </div>
               <div class="col-md-4 text-end">
+                {% if t.user.id == user.id %}
                 {% if t.canceled %}
                   <form method="post">{% csrf_token %}
                     <input type="hidden" name="action" value="redo_specific">
@@ -104,6 +105,7 @@
                     <input type="hidden" name="transaction_id" value="{{ t.id }}">
                     <button class="btn btn-sm btn-danger mt-2">Undo</button>
                   </form>
+                {% endif %}
                 {% endif %}
               </div>
             </div>
