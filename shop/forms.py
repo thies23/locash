@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Product
+from .models import User, Product, MagicId
 
 class TopUpForm(forms.Form):
     amount = forms.DecimalField(max_digits=8, decimal_places=2, min_value=0.01)
@@ -41,3 +41,12 @@ class EditPriceForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['price']
+
+class CreateMagicIdForm(forms.ModelForm):
+    class Meta:
+        model = MagicId
+        fields = ['id12', 'target']
+        widgets = {
+            'target': forms.TextInput(attrs={'size': 40, 'class': 'form-control', 'placeholder': 'Ziel der Magic ID'}),
+            'id12': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Magic ID'}),
+        }

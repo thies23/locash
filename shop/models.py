@@ -35,6 +35,10 @@ class Transaction(models.Model):
     note = models.CharField(max_length=255, blank=True)
     canceled = models.BooleanField(default=False)
 
+class MagicId(models.Model):
+    id12 = models.CharField(max_length=13, unique=True, verbose_name="Magic ID")
+    target = models.CharField(max_length=255, verbose_name="Target")
+
 class Meta:
     ordering = ['-timestamp']
 

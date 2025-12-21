@@ -7,8 +7,8 @@ from decimal import Decimal
 from django.http import JsonResponse
 import random
 
-from .models import User, Product, Transaction
-from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm
+from .models import User, Product, Transaction, MagicId
+from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm, CreateMagicIdForm
 
 ALLOWED_OVERDRAFT = Decimal('-25.00')
 
@@ -18,6 +18,12 @@ def index(request):
     if request.method == 'POST':
         q = request.POST.get('q', '').strip()
         if q:
+            try:
+                magic = MagicId.objects.get(id12=q)
+                return redirect(magic.target)
+            except MagicId.DoesNotExist:
+                pass
+
             try:
                 user = User.objects.get(id12=q)
                 return redirect('user_detail', id12=user.id12)
@@ -239,6 +245,7 @@ def redo_transaction(tx, request):
         messages.success(request, 'Transaktion wiederhergestellt.')
 
 def manage(request):
+    magic_ids = MagicId.objects.all().order_by('id12')
     users = User.objects.all().order_by('username')
     products = Product.objects.all().order_by('name')
 
@@ -272,15 +279,35 @@ def manage(request):
             else:
                 messages.error(request, 'Fehler beim Aktualisieren des Preises.')
 
+        elif 'create_magic_id' in request.POST:
+            form = CreateMagicIdForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Magic ID erstellt.')
+                return redirect('manage')
+            else:
+                messages.error(request, 'Fehler beim Erstellen der Magic ID.')
+
+        elif 'delete_magic_id' in request.POST:
+            mid = request.POST.get('magic_id_pk')
+            magicid = get_object_or_404(MagicId, pk=mid)
+            # Delete the MagicId instead of editing it
+            magicid.delete()
+            messages.success(request, 'Magic ID gelöscht.')
+            return redirect('manage')
+
     create_user_form = CreateUserForm()
     create_product_form = CreateProductForm()
     edit_price_form = EditPriceForm()
+    create_magicid_form = CreateMagicIdForm()
     return render(request, 'shop/manage.html', {
         'users': users,
         'products': products,
         'create_user_form': create_user_form,
         'create_product_form': create_product_form,
         'edit_price_form': edit_price_form,
+        'magic_ids': magic_ids,
+        'create_magicid_form': create_magicid_form,
     })
 def generate_unique_id(request):
     while True:

@@ -1,32 +1,56 @@
 {% extends 'shop/base.html' %}
 {% block content %}
   <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
+      <h3>Magic IDs</h3>
+      <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        <input type="hidden" name="create_magic_id" value="1">
+        <div class="input-group">
+          {{ create_magicid_form.id12 }}
+          {{ create_magicid_form.target }}
+          <input type="hidden" name="action" value="create_magic_id">
+          <button class="btn btn-primary">Anlegen</button>
+        </div>
+      </form>
+
+      <h4 class="mt-4">Bestehende Magic IDs</h4>
+      <table class="table">
+        <thead><tr><th>ID12</th><th>Ziel</th></tr></thead>
+        <tbody>
+          {% for m in magic_ids %}
+            <tr>
+              <td>{{ m.id12 }}</td>
+              <td>{{ m.target }}</td>
+              <td>
+                <form method="post" style="display:inline;">{% csrf_token %}
+                  <input type="hidden" name="delete_magic_id" value="1">
+                  <input type="hidden" name="magic_id_pk" value="{{ m.pk }}">
+                  <button class="btn btn-sm btn-danger">Löschen</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-4">
       <h3>Neue Benutzer anlegen</h3>
       <form method="post">{% csrf_token %}
         <input type="hidden" name="create_user" value="1">
-        <p>
-        {{ create_user_form.username.label_tag }}
-        {{ create_user_form.username }}
-        </p>
-
-        <p>
-        {{ create_user_form.display_name.label_tag }}
-        {{ create_user_form.display_name }}
-        </p>
-
-        <p>
-        {{ create_user_form.id12.label_tag }}
-        <div class="input-group">
+        <div class="input-group mb-3">
+          {{ create_user_form.username }}
+          {{ create_user_form.display_name }}
+        </div>
+        <div class="input-group mb-3">
             {{ create_user_form.id12 }}
             <button type="button" class="btn btn-secondary" onclick="generateID('id_id12')">Generieren</button>
         </div>
-        </p>
-
-        <p>
-        {{ create_user_form.balance.label_tag }}
-        {{ create_user_form.balance }}
-        </p>
+        <div class="input-group  mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="">Startguthaben</span>
+          </div>
+          {{ create_user_form.balance }}
+        </div>
         <button class="btn btn-primary">Erstellen</button>
       </form>
 
@@ -46,12 +70,18 @@
       </table>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <h3>Produkte</h3>
       <form method="post" enctype="multipart/form-data">{% csrf_token %}
-        <input type="hidden" name="create_product" value="1">
-        {{ create_product_form.as_p }}
-        <button class="btn btn-primary">Anlegen</button>
+        <div class="input-group">
+          <input type="hidden" name="create_product" value="1">
+          <!-- {{ create_product_form.as_p }} -->
+
+          {{ create_product_form.name }}
+          {{ create_product_form.id12 }}
+          {{ create_product_form.price }}
+          <button class="btn btn-primary">Anlegen</button>
+        </div>
       </form>
 
       <h4 class="mt-4">Bestehende Produkte</h4>
