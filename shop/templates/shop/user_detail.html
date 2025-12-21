@@ -4,64 +4,70 @@
   <div class="row">
     <div class="col-md-4">
       <h2>{{ user.display_name }} ({{ user.username }})</h2>
-    <p><strong>ID:</strong> {{ user.id12 }}</p>
-
-
-      <details>
-        <summary><b>Guthaben:</b> {{ user.balance }}€</summary>
-        <h5>Guthaben aufladen</h5>
-        <form method="post">{% csrf_token %}
-          <!-- {{ topup_form.amount }} -->
+      <div class="row">
+        <div class="col-md-7">
           <div class="input-group">
-            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
-            <input type="hidden" name="action" value="topup">
-            <button class="btn btn-primary">Aufladen</button>
+            <div class="input-group-text" id="btnGroupAddon"><b>{{ user.balance }} €</b></div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#balanceSection" aria-expanded="false" aria-controls="balanceSection">
+              Guthaben verwalten
+            </button>
           </div>
-        </form>
-
-        <div class="btn-group" role="group">
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="5.00">
-            <button class="btn btn-outline-secondary">5€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="10.00">
-            <button class="btn btn-outline-secondary">10€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="20.00">
-            <button class="btn btn-outline-secondary">20€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="50.00">
-            <button class="btn btn-outline-secondary">50€</button>
-          </form>
         </div>
+        <div class="col-md-5 text-end">
+          <span><strong>ID:</strong> {{ user.id12 }}</span>
+        </div>
+      </div>
+      <div class="collapse mt-2" id="balanceSection">
+        <div class="card card-body">
+          <div>
+            <h5>Guthaben aufladen</h5>
+            <form method="post">{% csrf_token %}
+              <!-- {{ topup_form.amount }} -->
+              <div class="input-group">
+                <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+                <input type="hidden" name="action" value="topup">
+                <button class="btn btn-primary">Aufladen</button>
+              </div>
+            </form>
 
-        <h5>Geld entnehmen</h5>
-        <form method="post">{% csrf_token %}
-          <div class="input-group">
-            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
-            <input type="hidden" name="action" value="withdraw">
-            <button class="btn btn-warning">Entnehmen</button>
-          </div>
-        </form>
-
-        <h5>Geld schicken</h5>
-          <form method="post">{% csrf_token %}
-
-            <div class="input-group">
-              {{ send_form.to_user }}
-              {{ send_form.amount }}
-              <input type="hidden" name="action" value="send">
-              <button class="btn btn-primary">Senden</button>
+            <div class="mt-3">
+              <form method="post" style="display:inline;">{% csrf_token %}
+                <input type="hidden" name="action" value="topup_quick">
+                <div class="btn-group" role="group" aria-label="Quick top-up">
+                  <button type="submit" name="amount" value="5.00" class="btn btn-outline-secondary">5€</button>
+                  <button type="submit" name="amount" value="10.00" class="btn btn-outline-secondary">10€</button>
+                  <button type="submit" name="amount" value="20.00" class="btn btn-outline-secondary">20€</button>
+                  <button type="submit" name="amount" value="50.00" class="btn btn-outline-secondary">50€</button>
+                </div>
+              </form>
             </div>
-          </form>
-      </details>
+          </div>
+
+          <div class="mt-3">
+            <h5>Geld entnehmen</h5>
+            <form method="post">{% csrf_token %}
+              <div class="input-group">
+                <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+                <input type="hidden" name="action" value="withdraw">
+                <button class="btn btn-warning">Entnehmen</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="mt-3">
+            <h5>Geld schicken</h5>
+            <form method="post">{% csrf_token %}
+
+              <div class="input-group">
+                {{ send_form.to_user }}
+                {{ send_form.amount }}
+                <input type="hidden" name="action" value="send">
+                <button class="btn btn-primary">Senden</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
 
       <hr>
       <h5>Letzte Transaktionen</h5>
