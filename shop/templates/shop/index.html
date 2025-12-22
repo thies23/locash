@@ -1,13 +1,20 @@
 {% extends 'shop/base.html' %}
 {% block content %}
-<h1 class="mb-4">Alle User</h1>
-
-<form method="post" class="mb-4">{% csrf_token %}
-  <div class="input-group" style="max-width:420px;">
-    <input id="user_search" name="q" type="text" class="form-control" placeholder="12-stellige User ID" value="{{ q }}">
-    <button class="btn btn-primary" type="submit">Öffnen</button>
+<div class="row justify-content-end">
+  <div class="col-12 col-lg-8">
+    <h1 class="mb-4">Alle User</h1>
   </div>
-</form>
+  <div class="col col-lg-4">
+    <form method="post" class="mb-4">{% csrf_token %}
+      <div class="input-group">
+        <input id="user_search" name="q" type="text" class="form-control" placeholder="12-stellige User ID" value="{{ q }}">
+        <button class="btn btn-primary" type="submit">Öffnen</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
   {% for u in users %}
   <div class="col">
@@ -19,9 +26,11 @@
         <h3 class="fw-bold">{{ u.display_name }}</h3>
         <div class="text-muted">ID: {{ u.id12 }}</div>
 
+{% if app_settings.show_balance_in_user_list %}
         <div class="mt-3 fs-4 fw-bold {% if u.balance < 0 %}text-danger{% else %}text-success{% endif %}">
           {{ u.balance }}€
         </div>
+{% endif %}
 
         {% if u.last_tx %}
         <div class="mt-2 text-muted small">

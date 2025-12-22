@@ -2,122 +2,127 @@
 {% block content %}
 
   <div class="row">
-    <div class="col-md-4">
+    <div class="col-xl-4 col-12">
       <h2>{{ user.display_name }} ({{ user.username }})</h2>
-    <p><strong>ID:</strong> {{ user.id12 }}</p>
-
-
-      <details>
-        <summary><b>Guthaben:</b> {{ user.balance }}€</summary>
-        <h5>Guthaben aufladen</h5>
-        <form method="post">{% csrf_token %}
-          <!-- {{ topup_form.amount }} -->
+      <div class="row">
+        <div class="col-7">
           <div class="input-group">
-            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
-            <input type="hidden" name="action" value="topup">
-            <button class="btn btn-primary">Aufladen</button>
+            <div class="input-group-text" id="btnGroupAddon"><b>{{ user.balance }} €</b></div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#balanceSection" aria-expanded="false" aria-controls="balanceSection">
+              Guthaben verwalten
+            </button>
           </div>
-        </form>
-
-        <div class="btn-group" role="group">
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="5.00">
-            <button class="btn btn-outline-secondary">5€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="10.00">
-            <button class="btn btn-outline-secondary">10€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="20.00">
-            <button class="btn btn-outline-secondary">20€</button>
-          </form>
-          <form method="post" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="action" value="topup_quick">
-            <input type="hidden" name="amount" value="50.00">
-            <button class="btn btn-outline-secondary">50€</button>
-          </form>
         </div>
+        <div class="col-5 text-end">
+          <span><strong>ID:</strong> {{ user.id12 }}</span>
+        </div>
+      </div>
+      <div class="collapse mt-2" id="balanceSection">
+        <div class="card card-body">
+          <div>
+            <h5>Guthaben aufladen</h5>
+            <form method="post">{% csrf_token %}
+              <!-- {{ topup_form.amount }} -->
+              <div class="input-group">
+                <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+                <input type="hidden" name="action" value="topup">
+                <button class="btn btn-primary">Aufladen</button>
+              </div>
+            </form>
 
-        <h5>Geld entnehmen</h5>
-        <form method="post">{% csrf_token %}
-          <div class="input-group">
-            <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
-            <input type="hidden" name="action" value="withdraw">
-            <button class="btn btn-warning">Entnehmen</button>
-          </div>
-        </form>
-
-        <h5>Geld schicken</h5>
-          <form method="post">{% csrf_token %}
-
-            <div class="input-group">
-              {{ send_form.to_user }}
-              {{ send_form.amount }}
-              <input type="hidden" name="action" value="send">
-              <button class="btn btn-primary">Senden</button>
+            <div class="mt-3">
+              <form method="post" style="display:inline;">{% csrf_token %}
+                <input type="hidden" name="action" value="topup_quick">
+                <div class="btn-group" role="group" aria-label="Quick top-up">
+                  <button type="submit" name="amount" value="5.00" class="btn btn-outline-secondary">5€</button>
+                  <button type="submit" name="amount" value="10.00" class="btn btn-outline-secondary">10€</button>
+                  <button type="submit" name="amount" value="20.00" class="btn btn-outline-secondary">20€</button>
+                  <button type="submit" name="amount" value="50.00" class="btn btn-outline-secondary">50€</button>
+                </div>
+              </form>
             </div>
-          </form>
-      </details>
+          </div>
+
+          <div class="mt-3">
+            <h5>Geld entnehmen</h5>
+            <form method="post">{% csrf_token %}
+              <div class="input-group">
+                <input name="amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="Betrag">
+                <input type="hidden" name="action" value="withdraw">
+                <button class="btn btn-warning">Entnehmen</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="mt-3">
+            <h5>Geld schicken</h5>
+            <form method="post">{% csrf_token %}
+
+              <div class="input-group">
+                {{ send_form.to_user }}
+                {{ send_form.amount }}
+                <input type="hidden" name="action" value="send">
+                <button class="btn btn-primary">Senden</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
 
       <hr>
-      <h5>Letzte Transaktionen</h5>
-      <!-- <form method="post">{% csrf_token %}
-        <input type="hidden" name="action" value="undo_last">
-        <button class="btn btn-danger">Letzte Transaktion rückgängig machen</button>
-      </form> -->
-      <div>
-        <ul class="list-group mb-2">
-        {% for t in last_transactions %}
-          <li class="list-group-item{% if t.canceled %} list-group-item-danger{% elif t.tx_type == 'SEND' %} list-group-item-info{% elif t.tx_type == 'TOPUP' %} list-group-item-primary{% elif t.tx_type == 'WITHDRAW' %} list-group-item-warning{% endif %}">
-            <div class="row justify-content-end">
-              <div class="col-md-8">
-                <strong>{{ t.timestamp }}</strong><br>
+      <!-- Transactions: show on XL+ in the left column -->
+      <div class="d-none d-xl-block">
+        <h5>Letzte Transaktionen</h5>
+        <div>
+          <ul class="list-group mb-2">
+          {% for t in last_transactions %}
+            <li class="list-group-item{% if t.canceled %} list-group-item-danger text-decoration-line-through{% elif t.tx_type == 'SEND' %} list-group-item-info{% elif t.tx_type == 'TOPUP' %} list-group-item-primary{% elif t.tx_type == 'WITHDRAW' %} list-group-item-warning{% endif %}">
+              <div class="row justify-content-end">
+                <div class="col-8">
+                  <strong>{{ t.timestamp }}</strong><br>
 
-                {% if t.tx_type == 'SEND' %}
-                    {% if t.user.id == user.id %}
-                        💸 <strong>{{ t.amount }}€</strong> gesendet an <strong><a href="{% url 'user_detail' id12=t.to_user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.to_user.display_name }}</a></strong>
-                    {% else %}
-                        📩 <strong>{{ t.amount }}€</strong> erhalten von <strong><a href="{% url 'user_detail' id12=t.user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.user.display_name }}</a></strong>
-                    {% endif %}
-                {% elif t.tx_type == 'BUY' %}
-                    🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
-                {% elif t.tx_type == 'TOPUP' %}
-                    💰 Aufladung: +{{ t.amount }}€
-                {% elif t.tx_type == 'WITHDRAW' %}
-                    💲 Entnahme: -{{ t.amount }}€
-                {% endif %}
+                  {% if t.tx_type == 'SEND' %}
+                      {% if t.user.id == user.id %}
+                          💸 <strong>{{ t.amount }}€</strong> gesendet an <strong><a href="{% url 'user_detail' id12=t.to_user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.to_user.display_name }}</a></strong>
+                      {% else %}
+                          📩 <strong>{{ t.amount }}€</strong> erhalten von <strong><a href="{% url 'user_detail' id12=t.user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.user.display_name }}</a></strong>
+                      {% endif %}
+                  {% elif t.tx_type == 'BUY' %}
+                      🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
+                  {% elif t.tx_type == 'TOPUP' %}
+                      💰 Aufladung: +{{ t.amount }}€
+                  {% elif t.tx_type == 'WITHDRAW' %}
+                      💲 Entnahme: -{{ t.amount }}€
+                  {% endif %}
+                </div>
+                <div class="col-4 text-end">
+                  {% if t.user.id == user.id %}
+                  {% if t.canceled %}
+                    <form method="post">{% csrf_token %}
+                      <input type="hidden" name="action" value="redo_specific">
+                      <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                      <button class="btn btn-sm btn-success mt-2">Restore</button>
+                    </form>
+                  {% else %}
+                    <form method="post">{% csrf_token %}
+                      <input type="hidden" name="action" value="undo_specific">
+                      <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                      <button class="btn btn-sm btn-danger mt-2">Undo</button>
+                    </form>
+                  {% endif %}
+                  {% endif %}
+                </div>
               </div>
-              <div class="col-md-4 text-end">
-                {% if t.user.id == user.id %}
-                {% if t.canceled %}
-                  <form method="post">{% csrf_token %}
-                    <input type="hidden" name="action" value="redo_specific">
-                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
-                    <button class="btn btn-sm btn-success mt-2">Restore</button>
-                  </form>
-                {% else %}
-                  <form method="post">{% csrf_token %}
-                    <input type="hidden" name="action" value="undo_specific">
-                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
-                    <button class="btn btn-sm btn-danger mt-2">Undo</button>
-                  </form>
-                {% endif %}
-                {% endif %}
-              </div>
-            </div>
-          </li>
-        {% empty %}
-            <li class="list-group-item">Keine Transaktionen.</li>
-        {% endfor %}
-        </ul>
+            </li>
+          {% empty %}
+              <li class="list-group-item">Keine Transaktionen.</li>
+          {% endfor %}
+          </ul>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-8">
+    <div class="col-12 col-xl-8">
       <div class="row">
         <div class="col">
           <h4>Produkte</h4>
@@ -152,6 +157,57 @@
     </div>
   </div>
 
+  <!-- Duplicate transactions block for smaller viewports: place after products -->
+  <div class="d-block d-xl-none mt-4">
+    <hr>
+    <h5>Letzte Transaktionen</h5>
+    <div>
+      <ul class="list-group mb-2">
+      {% for t in last_transactions %}
+        <li class="list-group-item{% if t.canceled %} list-group-item-danger text-decoration-line-through{% elif t.tx_type == 'SEND' %} list-group-item-info{% elif t.tx_type == 'TOPUP' %} list-group-item-primary{% elif t.tx_type == 'WITHDRAW' %} list-group-item-warning{% endif %}">
+          <div class="row">
+            <div class="col-8">
+              <strong>{{ t.timestamp }}</strong><br>
+              {% if t.tx_type == 'SEND' %}
+                  {% if t.user.id == user.id %}
+                      💸 <strong>{{ t.amount }}€</strong> gesendet an <strong><a href="{% url 'user_detail' id12=t.to_user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.to_user.display_name }}</a></strong>
+                  {% else %}
+                      📩 <strong>{{ t.amount }}€</strong> erhalten von <strong><a href="{% url 'user_detail' id12=t.user.id12 %}" style="text-decoration-line: none; color: rgb(5, 81, 96);">{{ t.user.display_name }}</a></strong>
+                  {% endif %}
+              {% elif t.tx_type == 'BUY' %}
+                  🛒 Kauf: {{ t.product.name }} – {{ t.amount }}€
+              {% elif t.tx_type == 'TOPUP' %}
+                  💰 Aufladung: +{{ t.amount }}€
+              {% elif t.tx_type == 'WITHDRAW' %}
+                  💲 Entnahme: -{{ t.amount }}€
+              {% endif %}
+            </div>
+            <div class="col-4 text-end">
+              {% if t.user.id == user.id %}
+                {% if t.canceled %}
+                  <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="redo_specific">
+                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-success mt-2">Restore</button>
+                  </form>
+                {% else %}
+                  <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="undo_specific">
+                    <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-danger mt-2">Undo</button>
+                  </form>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% empty %}
+          <li class="list-group-item">Keine Transaktionen.</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+
   <!-- Redirect progress indicator (top-right) -->
   <div id="redirect-progress" style="position:fixed; top:12px; right:12px; width:220px; z-index:2000; display:none;">
     <div class="progress justify-content-end" style="height:10px; border-radius:6px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
@@ -163,24 +219,72 @@
     const prodInput = document.getElementById('product_id_input');
     if (prodInput) prodInput.focus();
 
-    const timeoutMs = {% if request.GET.bought %}5000{% else %}20000{% endif %};
+    var timeoutMs = {% if request.GET.bought %}5000{% else %}20000{% endif %};
+    {# disable timeout when `?kiosk=` is one of: no, 0, false (case-insensitive) #}
+    {% with k=request.GET.kiosk|default:""|lower %}
+    var disableTimeout = {% if k == 'no' or k == '0' or k == 'false' %}true{% else %}false{% endif %};
+    {% endwith %}
 
-    // Show and animate progress bar only when timeout is active
+    // Show and animate progress bar and allow resetting the timer.
     (function () {
       const progress = document.getElementById('redirect-progress');
       const bar = document.getElementById('redirect-progress-bar');
       if (!progress || !bar) return;
-      progress.style.display = 'block';
-      const start = Date.now();
+      if (disableTimeout) return; // do not start timers when static mode is requested
+      let start = Date.now();
+      let rafId = null;
+      let timerId = null;
+
       function tick() {
         const elapsed = Date.now() - start;
         const pct = Math.max(0, 100 - (elapsed / timeoutMs) * 100);
         bar.style.width = pct + '%';
-        if (elapsed < timeoutMs) requestAnimationFrame(tick);
+        if (elapsed < timeoutMs) {
+          rafId = requestAnimationFrame(tick);
+        }
       }
-      requestAnimationFrame(tick);
-    })();
 
-    setTimeout(() => { window.location.href = "{% url 'index' %}"; }, timeoutMs);
+      function startProgress() {
+        progress.style.display = 'block';
+        start = Date.now();
+        bar.style.width = '100%';
+        if (rafId) cancelAnimationFrame(rafId);
+        if (timerId) clearTimeout(timerId);
+        rafId = requestAnimationFrame(tick);
+        timerId = setTimeout(() => { window.location.href = "{% url 'index' %}"; }, timeoutMs);
+      }
+
+        // Start on load
+        startProgress();
+
+        // Reset when the balance collapse toggle is clicked
+        const toggleBtn = document.querySelector('[data-bs-target="#balanceSection"]');
+        if (toggleBtn) toggleBtn.addEventListener('click', (e) => {
+          timeoutMs = 20000;  // Extend timeout on user interaction
+          startProgress();
+        });
+
+        // When any buy form is submitted, set timeout to 5s and restart progress
+        const buyForms = document.querySelectorAll('form input[name="action"][value="buy"], form input[name="action"][value="buy_by_id"]');
+        buyForms.forEach(input => {
+          const f = input.closest('form');
+          if (!f) return;
+          f.addEventListener('submit', () => {
+            timeoutMs = 5000;
+            startProgress();
+          });
+        });
+
+        // When undo or redo specific are submitted, reset to 20s
+        const undoRedoForms = document.querySelectorAll('form input[name="action"][value="undo_specific"], form input[name="action"][value="redo_specific"], form input[name="action"][value="undo_last"]');
+        undoRedoForms.forEach(input => {
+          const f = input.closest('form');
+          if (!f) return;
+          f.addEventListener('submit', () => {
+            timeoutMs = 20000;
+            startProgress();
+          });
+        });
+    })();
   </script>
 {% endblock %}

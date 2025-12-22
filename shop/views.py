@@ -7,25 +7,33 @@ from decimal import Decimal
 from django.http import JsonResponse
 import random
 
-from .models import User, Product, Transaction
-from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm
+from .models import User, Product, Transaction, MagicId, AppSettings
+from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm, CreateMagicIdForm
 
 ALLOWED_OVERDRAFT = Decimal('-25.00')
 
 def index(request):
+    app_settings = AppSettings.objects.first()
     q = request.GET.get('q', '').strip()
     users = User.objects.annotate(last_tx=Max('transactions__timestamp')).order_by('-last_tx')
     if request.method == 'POST':
         q = request.POST.get('q', '').strip()
         if q:
             try:
+                magic = MagicId.objects.get(id12=q)
+                return redirect(magic.target)
+            except MagicId.DoesNotExist:
+                pass
+
+            try:
                 user = User.objects.get(id12=q)
                 return redirect('user_detail', id12=user.id12)
             except User.DoesNotExist:
                 messages.error(request, 'Kein User mit dieser ID gefunden.')
-    return render(request, 'shop/index.html', {'users': users, 'q': q})
+    return render(request, 'shop/index.html', {'users': users, 'q': q, 'app_settings': app_settings})
 
 def user_detail(request, id12):
+    app_settings = AppSettings.objects.first()
     user = get_object_or_404(User, id12=id12)
     topup_form = TopUpForm()
     send_form = SendMoneyForm()
@@ -189,6 +197,7 @@ def user_detail(request, id12):
         'topup_form': topup_form,
         'send_form': send_form,
         'buyid_form': buyid_form,
+        'app_settings': app_settings,
     }
     return render(request, 'shop/user_detail.html', context)
 
@@ -239,6 +248,8 @@ def redo_transaction(tx, request):
         messages.success(request, 'Transaktion wiederhergestellt.')
 
 def manage(request):
+    app_settings = AppSettings.objects.first()
+    magic_ids = MagicId.objects.all().order_by('id12')
     users = User.objects.all().order_by('username')
     products = Product.objects.all().order_by('name')
 
@@ -272,15 +283,48 @@ def manage(request):
             else:
                 messages.error(request, 'Fehler beim Aktualisieren des Preises.')
 
+        elif 'create_magic_id' in request.POST:
+            form = CreateMagicIdForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Magic ID erstellt.')
+                return redirect('manage')
+            else:
+                messages.error(request, 'Fehler beim Erstellen der Magic ID.')
+
+        elif 'delete_magic_id' in request.POST:
+            mid = request.POST.get('magic_id_pk')
+            magicid = get_object_or_404(MagicId, pk=mid)
+            # Delete the MagicId instead of editing it
+            magicid.delete()
+            messages.success(request, 'Magic ID gelöscht.')
+            return redirect('manage')
+
+        elif 'update_app_settings' in request.POST:
+            show_menu = request.POST.get('show_manage_menu') == 'on'
+            show_balance = request.POST.get('show_balance_in_user_list') == 'on'
+            if not app_settings:
+                app_settings = AppSettings.objects.create(show_manage_menu=show_menu, show_balance_in_user_list=show_balance)
+            else:
+                app_settings.show_manage_menu = show_menu
+                app_settings.show_balance_in_user_list = show_balance
+                app_settings.save()
+            messages.success(request, 'Einstellungen aktualisiert.')
+            return redirect('manage')
+
     create_user_form = CreateUserForm()
     create_product_form = CreateProductForm()
     edit_price_form = EditPriceForm()
+    create_magicid_form = CreateMagicIdForm()
     return render(request, 'shop/manage.html', {
         'users': users,
         'products': products,
         'create_user_form': create_user_form,
         'create_product_form': create_product_form,
         'edit_price_form': edit_price_form,
+        'magic_ids': magic_ids,
+        'create_magicid_form': create_magicid_form,
+        'app_settings': app_settings,
     })
 def generate_unique_id(request):
     while True:

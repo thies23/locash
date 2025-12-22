@@ -35,6 +35,14 @@ class Transaction(models.Model):
     note = models.CharField(max_length=255, blank=True)
     canceled = models.BooleanField(default=False)
 
+class AppSettings(models.Model):
+    show_manage_menu = models.BooleanField(default=True, verbose_name="Show Management Menu")
+    show_balance_in_user_list = models.BooleanField(default=True, verbose_name="Show Balance in User List")
+
+class MagicId(models.Model):
+    id12 = models.CharField(max_length=13, unique=True, verbose_name="Magic ID")
+    target = models.CharField(max_length=255, verbose_name="Target")
+
 class Meta:
     ordering = ['-timestamp']
 
