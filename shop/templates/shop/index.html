@@ -18,7 +18,7 @@
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
   {% for u in users %}
   <div class="col">
-    <a href="{% url 'user_detail' u.id12 %}"
+    <a href="{% url 'user_detail' u.id12 %}?manual=1"
        class="text-decoration-none">
       <div class="card shadow-sm p-4 h-100"
            style="border-radius: 18px; transition: 0.15s;">

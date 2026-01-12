@@ -7,7 +7,7 @@ class User(models.Model):
     display_name = models.CharField(max_length=200)
     id12 = models.CharField(max_length=13, unique=True)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-
+    pin = models.CharField(max_length=8,default="0000",verbose_name="PIN")
     def __str__(self):
         return f"{self.username} ({self.id12})"
 
@@ -38,6 +38,9 @@ class Transaction(models.Model):
 class AppSettings(models.Model):
     show_manage_menu = models.BooleanField(default=True, verbose_name="Show Management Menu")
     show_balance_in_user_list = models.BooleanField(default=True, verbose_name="Show Balance in User List")
+    pin_enabled = models.BooleanField(default=False, verbose_name="PIN aktivieren")
+    pin_enforced = models.BooleanField(default=False, verbose_name="PIN erzwingen")
+    pin_only_manual = models.BooleanField(default=False,verbose_name="PIN nur bei manueller Auswahl")
 
 class MagicId(models.Model):
     id12 = models.CharField(max_length=13, unique=True, verbose_name="Magic ID")
