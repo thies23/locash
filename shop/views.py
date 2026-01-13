@@ -343,33 +343,28 @@ def manage(request):
         elif 'update_app_settings' in request.POST:
             show_menu = request.POST.get('show_manage_menu') == 'on'
             show_balance = request.POST.get('show_balance_in_user_list') == 'on'
-            if not app_settings:
-                app_settings = AppSettings.objects.create(show_manage_menu=show_menu, show_balance_in_user_list=show_balance)
-            else:
-                app_settings.show_manage_menu = show_menu
-                app_settings.show_balance_in_user_list = show_balance
-                app_settings.save()
-            messages.success(request, 'Einstellungen aktualisiert.')
-            return redirect('manage')
-        elif 'update_app_settings' in request.POST:
             pin_enabled = request.POST.get('pin_enabled') == 'on'
             pin_enforced = request.POST.get('pin_enforced') == 'on'
             pin_only_manual = request.POST.get('pin_only_manual') == 'on'
 
             if not app_settings:
                 app_settings = AppSettings.objects.create(
-                pin_enabled=pin_enabled,
-                pin_enforced=pin_enforced,
-                pin_only_manual=pin_only_manual
-            )
-        else:
-            app_settings.pin_enabled = pin_enabled
-            app_settings.pin_enforced = pin_enforced
-            app_settings.pin_only_manual = pin_only_manual
-            app_settings.save()
+                    show_manage_menu=show_menu,
+                    show_balance_in_user_list=show_balance,
+                    pin_enabled=pin_enabled,
+                    pin_enforced=pin_enforced,
+                    pin_only_manual=pin_only_manual
+                )
+            else:
+                app_settings.show_manage_menu = show_menu
+                app_settings.show_balance_in_user_list = show_balance
+                app_settings.pin_enabled = pin_enabled
+                app_settings.pin_enforced = pin_enforced
+                app_settings.pin_only_manual = pin_only_manual
+                app_settings.save()
 
             messages.success(request, 'PIN-Einstellungen gespeichert.')
-        return redirect('manage')
+            return redirect('manage')
 
 
     create_user_form = CreateUserForm()
