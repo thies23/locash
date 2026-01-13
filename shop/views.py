@@ -16,6 +16,9 @@ def pin_required(request, user, manual=True):
     app_settings = AppSettings.objects.first()
     if not app_settings or not app_settings.pin_enabled:
         return False
+    
+    if not app_settings.pin_enforced and not user.pin_set:
+        return False
 
     if app_settings.pin_only_manual and not manual:
         return False
@@ -223,6 +226,7 @@ def user_detail(request, id12):
             form = PinForm(request.POST)
             if form.is_valid():
                 user.pin = form.cleaned_data['pin']
+                user.pin_set = True
                 user.save()
                 messages.success(request, 'PIN geändert.')
             else:

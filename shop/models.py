@@ -8,6 +8,7 @@ class User(models.Model):
     id12 = models.CharField(max_length=13, unique=True)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     pin = models.CharField(max_length=8,default="0000",verbose_name="PIN")
+    pin_set = models.BooleanField(default=False,verbose_name="PIN gesetzt")
     def __str__(self):
         return f"{self.username} ({self.id12})"
 
