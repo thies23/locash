@@ -21,7 +21,8 @@ from shop import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('user/<str:id12>/', views.user_detail, name='user_detail'),
+    path('user/<str:username>/', views.user_detail, name='user_detail_username'),
+    path('user/id/<str:id12>/', views.user_detail, name='user_detail'),
     path('manage/', views.manage, name='manage'),
     path('admin/', admin.site.urls),
     path('generate-id/', views.generate_unique_id, name='generate_unique_id'),

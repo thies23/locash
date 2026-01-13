@@ -14,7 +14,7 @@
           </div>
         </div>
         <div class="col-5 text-end">
-          <span><strong>ID:</strong> {{ user.id12 }}</span>
+          <span class="text-muted"><strong>ID:</strong> {{ user.id12 }}</span>
         </div>
       </div>
       <div class="collapse mt-2" id="balanceSection">
@@ -68,7 +68,23 @@
           </div>
         </div>
       </div>
+      <hr>
+      <h5>PIN</h5>
+      <form method="post" class="mt-2">{% csrf_token %}
+        <input type="hidden" name="action" value="change_pin">
 
+        <div class="input-group">
+          <input type="password"
+                name="pin"
+                minlength="4"
+                maxlength="8"
+                pattern="[0-9]{4,8}"
+                class="form-control"
+                placeholder="Neue PIN (4-8 Ziffern)"
+                required>
+          <button class="btn btn-warning">PIN ändern</button>
+        </div>
+      </form>
       <hr>
       <!-- Transactions: show on XL+ in the left column -->
       <div class="d-none d-xl-block">

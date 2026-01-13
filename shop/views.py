@@ -8,9 +8,22 @@ from django.http import JsonResponse
 import random
 
 from .models import User, Product, Transaction, MagicId, AppSettings
-from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm, CreateMagicIdForm
+from .forms import TopUpForm, SendMoneyForm, BuyByIdForm, CreateUserForm, CreateProductForm, EditPriceForm, CreateMagicIdForm, PinForm
 
 ALLOWED_OVERDRAFT = Decimal('-25.00')
+
+def pin_required(request, user, manual=True):
+    app_settings = AppSettings.objects.first()
+    if not app_settings or not app_settings.pin_enabled:
+        return False
+    
+    if not app_settings.pin_enforced and not user.pin_set:
+        return False
+
+    if app_settings.pin_only_manual and not manual:
+        return False
+
+    return True
 
 def index(request):
     app_settings = AppSettings.objects.first()
@@ -27,14 +40,39 @@ def index(request):
 
             try:
                 user = User.objects.get(id12=q)
-                return redirect('user_detail', id12=user.id12)
+                request.session.pop('pin_ok', None)
+                return redirect(f"{reverse('user_detail', args=[user.id12])}")
             except User.DoesNotExist:
                 messages.error(request, 'Kein User mit dieser ID gefunden.')
     return render(request, 'shop/index.html', {'users': users, 'q': q, 'app_settings': app_settings})
 
-def user_detail(request, id12):
+def user_detail(request, id12=None, username=None):
+    if username:
+        user = get_object_or_404(User, username=username)
+        manual = True
+    else:
+        user = get_object_or_404(User, id12=id12)
+        manual = False
     app_settings = AppSettings.objects.first()
-    user = get_object_or_404(User, id12=id12)
+
+    pin_verified = True
+    if pin_required(request, user, manual):
+        pin_verified = False
+    if request.method == 'POST' and request.POST.get('action') == 'check_pin':
+        form = PinForm(request.POST)
+        if form.is_valid() and form.cleaned_data['pin'] == user.pin:
+            pin_verified = True
+        else:
+            messages.error(request, 'Falsche PIN')
+    else:
+        form = PinForm()
+
+    if not pin_verified:
+        return render(request, 'shop/pin_required.html', {
+            'user': user,
+            'form': form
+        })
+
     topup_form = TopUpForm()
     send_form = SendMoneyForm()
     buyid_form = BuyByIdForm()
@@ -188,6 +226,18 @@ def user_detail(request, id12):
                 return redirect('user_detail', id12=id12)
             redo_transaction(tx, request)
             return redirect('user_detail', id12=id12)
+        
+        elif action == 'change_pin':
+            form = PinForm(request.POST)
+            if form.is_valid():
+                user.pin = form.cleaned_data['pin']
+                user.pin_set = True
+                user.save()
+                messages.success(request, 'PIN geändert.')
+            else:
+                messages.error(request, 'Ungültige PIN.')
+            return redirect('user_detail', id12=id12)
+
 
     last_transactions = Transaction.objects.filter(Q(user=user) | Q(to_user=user)).order_by('-timestamp')[:10]
     context = {
@@ -303,14 +353,29 @@ def manage(request):
         elif 'update_app_settings' in request.POST:
             show_menu = request.POST.get('show_manage_menu') == 'on'
             show_balance = request.POST.get('show_balance_in_user_list') == 'on'
+            pin_enabled = request.POST.get('pin_enabled') == 'on'
+            pin_enforced = request.POST.get('pin_enforced') == 'on'
+            pin_only_manual = request.POST.get('pin_only_manual') == 'on'
+
             if not app_settings:
-                app_settings = AppSettings.objects.create(show_manage_menu=show_menu, show_balance_in_user_list=show_balance)
+                app_settings = AppSettings.objects.create(
+                    show_manage_menu=show_menu,
+                    show_balance_in_user_list=show_balance,
+                    pin_enabled=pin_enabled,
+                    pin_enforced=pin_enforced,
+                    pin_only_manual=pin_only_manual
+                )
             else:
                 app_settings.show_manage_menu = show_menu
                 app_settings.show_balance_in_user_list = show_balance
+                app_settings.pin_enabled = pin_enabled
+                app_settings.pin_enforced = pin_enforced
+                app_settings.pin_only_manual = pin_only_manual
                 app_settings.save()
-            messages.success(request, 'Einstellungen aktualisiert.')
+
+            messages.success(request, 'PIN-Einstellungen gespeichert.')
             return redirect('manage')
+
 
     create_user_form = CreateUserForm()
     create_product_form = CreateProductForm()

@@ -30,7 +30,7 @@ class BuyByIdForm(forms.Form):
 class CreateUserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'display_name', 'id12', 'balance']
+        fields = ['username', 'display_name', 'id12', 'balance', 'pin']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Benutzername'}),
             'display_name': forms.TextInput(attrs={'size': 40, 'class': 'form-control', 'placeholder': 'Anzeigename'}),
@@ -61,3 +61,19 @@ class CreateMagicIdForm(forms.ModelForm):
             'target': forms.TextInput(attrs={'size': 40, 'class': 'form-control', 'placeholder': 'Ziel der Magic ID'}),
             'id12': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Magic ID'}),
         }
+
+class PinForm(forms.Form):
+    pin = forms.CharField(
+        min_length=4,
+        max_length=8,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': '4-8 stellige PIN'
+        })
+    )
+
+    def clean_pin(self):
+        pin = self.cleaned_data['pin']
+        if not pin.isdigit():
+            raise forms.ValidationError("PIN darf nur aus Zahlen bestehen.")
+        return pin
