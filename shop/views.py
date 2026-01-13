@@ -47,6 +47,7 @@ def user_detail(request, id12):
     user = get_object_or_404(User, id12=id12)
     app_settings = AppSettings.objects.first()
     manual = request.GET.get('manual') == '1'
+    pin_verified = True
     if pin_required(request, user, manual):
         pin_verified = False
     if request.method == 'POST' and request.POST.get('action') == 'check_pin':
