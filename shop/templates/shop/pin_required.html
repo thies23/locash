@@ -24,7 +24,6 @@
            inputmode="numeric"
            pattern="[0-9]*"
            maxlength="8"
-           readonly
            required>
 
     <div class="row g-2 text-center">
@@ -75,5 +74,7 @@
   function clearPin() {
     pinInput.value = '';
   }
+
+  document.getElementById('pin-input').focus();
 </script>
 {% endblock %}

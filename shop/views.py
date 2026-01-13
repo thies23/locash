@@ -41,15 +41,20 @@ def index(request):
             try:
                 user = User.objects.get(id12=q)
                 request.session.pop('pin_ok', None)
-                return redirect(f"{reverse('user_detail', args=[user.id12])}?manual=1")
+                return redirect(f"{reverse('user_detail', args=[user.id12])}")
             except User.DoesNotExist:
                 messages.error(request, 'Kein User mit dieser ID gefunden.')
     return render(request, 'shop/index.html', {'users': users, 'q': q, 'app_settings': app_settings})
 
-def user_detail(request, id12):
-    user = get_object_or_404(User, id12=id12)
+def user_detail(request, id12=None, username=None):
+    if username:
+        user = get_object_or_404(User, username=username)
+        manual = True
+    else:
+        user = get_object_or_404(User, id12=id12)
+        manual = False
     app_settings = AppSettings.objects.first()
-    manual = request.GET.get('manual') == '1'
+
     pin_verified = True
     if pin_required(request, user, manual):
         pin_verified = False
