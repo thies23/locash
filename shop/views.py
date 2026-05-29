@@ -38,7 +38,7 @@ def user_detail(request, id12):
     topup_form = TopUpForm()
     send_form = SendMoneyForm()
     buyid_form = BuyByIdForm()
-    products = Product.objects.all()
+    products = Product.objects.filter(visible=True)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -282,6 +282,17 @@ def manage(request):
                 return redirect('manage')
             else:
                 messages.error(request, 'Fehler beim Aktualisieren des Preises.')
+        elif 'toggle_visibility' in request.POST:
+            pid = request.POST.get('product_pk')
+            product = get_object_or_404(Product, pk=pid)
+
+            product.visible = not product.visible
+            product.save()
+
+            state = "sichtbar" if product.visible else "ausgeblendet"
+            messages.success(request, f'Produkt wurde {state}.')
+
+            return redirect('manage')    
 
         elif 'create_magic_id' in request.POST:
             form = CreateMagicIdForm(request.POST)
