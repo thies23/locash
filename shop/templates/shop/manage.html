@@ -137,26 +137,40 @@
       </form>
 
       <h4 class="mt-4">Bestehende Produkte</h4>
-      <table class="table">
-        <thead><tr><th>Name</th><th>ID</th><th>Preis</th><th>Neuer Preis</th></tr></thead>
-        <tbody>
-          {% for p in products %}
-            <tr>
-              <td>{{ p.name }}</td>
-              <td>{{ p.id12 }}</td>
-              <td>{{ p.price }}€</td>
-              <td>
-                <form method="post" style="display:inline;">{% csrf_token %}
-                  <input type="hidden" name="edit_price" value="1">
-                  <input type="hidden" name="product_pk" value="{{ p.pk }}">
-                  <input name="price" value="{{ p.price }}" class="form-control" style="width:120px;display:inline;">
-                  <button class="btn btn-sm btn-secondary">Speichern</button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        <table class="table">
+        <thead><tr><th>Name</th><th>ID</th><th>Preis</th><th>Sichtbar</th><th>Neuer Preis</th></tr></thead>
+          <tbody>
+            {% for p in products %}
+              <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.id12 }}</td>
+                <td>{{ p.price }}€</td>
+                <td>
+                  <form method="post" style="display:inline;">{% csrf_token %}
+                    <input type="hidden" name="toggle_visibility" value="1">
+                    <input type="hidden" name="product_pk" value="{{ p.pk }}">
+
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        onchange="this.form.submit()"
+                        {% if p.visible %}checked{% endif %}>
+                    </div>
+                  </form>
+                </td>
+                <td>
+                  <form method="post" style="display:inline;">{% csrf_token %}
+                    <input type="hidden" name="edit_price" value="1">
+                    <input type="hidden" name="product_pk" value="{{ p.pk }}">
+                    <input name="price" value="{{ p.price }}" class="form-control" style="width:120px;display:inline;">
+                    <button class="btn btn-sm btn-secondary">Speichern</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
     </div>
   </div>
   <script>
