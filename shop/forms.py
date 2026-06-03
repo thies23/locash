@@ -65,7 +65,6 @@ class CreateMagicIdForm(forms.ModelForm):
 class PinForm(forms.Form):
     pin = forms.CharField(
         min_length=4,
-        max_length=8,
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
             'placeholder': '4-8 stellige PIN'
